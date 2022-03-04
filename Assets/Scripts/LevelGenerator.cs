@@ -5,6 +5,7 @@ using UnityEngine;
 public class LevelGenerator : MonoBehaviour {
 
 	public GameObject floorPrefab;
+	public GameObject floorHolePrefab;
 	public GameObject wallPrefab;
 	public GameObject ceilingPrefab;
 
@@ -21,6 +22,8 @@ public class LevelGenerator : MonoBehaviour {
 
 	public int mazeSize;
 
+	public int holes = 4;
+
 	// spawns at the end of the maze generation
 	public GameObject pickup;
 
@@ -28,7 +31,7 @@ public class LevelGenerator : MonoBehaviour {
 	private bool characterPlaced = false;
 
 	// 2D array representing the map
-	private bool[,] mapData;
+	private int[,] mapData;
 
 	// we use these to dig through our maze and to spawn the pickup at the end
 	private int mazeX = 4, mazeY = 1;
@@ -42,7 +45,7 @@ public class LevelGenerator : MonoBehaviour {
 		// create actual maze blocks from maze boolean data
 		for (int z = 0; z < mazeSize; z++) {
 			for (int x = 0; x < mazeSize; x++) {
-				if (mapData[z, x]) {
+				if (mapData[z, x] == 0) {
 					CreateChildPrefab(wallPrefab, wallsParent, x, 1, z);
 					CreateChildPrefab(wallPrefab, wallsParent, x, 2, z);
 					CreateChildPrefab(wallPrefab, wallsParent, x, 3, z);
@@ -57,10 +60,16 @@ public class LevelGenerator : MonoBehaviour {
 					characterPlaced = true;
 				}
 
-				// create floor and ceiling
-				CreateChildPrefab(floorPrefab, floorParent, x, 0, z);
+				if (mapData[z, x] == 1) {
+					// create floor
+					CreateChildPrefab(floorPrefab, floorParent, x, 0, z);
+				} else {
+					// create hole
+					CreateChildPrefab(floorHolePrefab, floorParent, x, 0, z);
+				}
 
 				if (generateRoof) {
+					//create ceiling
 					CreateChildPrefab(ceilingPrefab, wallsParent, x, 4, z);
 				}
 			}
@@ -71,15 +80,16 @@ public class LevelGenerator : MonoBehaviour {
 		myPickup.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
 	}
 
-	// generates the booleans determining the maze, which will be used to construct the cubes
+	// generates the ints determining the maze, which will be used to construct the cubes
+	// 0 wall, 1 ground, 2 hole
 	// actually making up the maze
-	bool[,] GenerateMazeData() {
-		bool[,] data = new bool[mazeSize, mazeSize];
+	int[,] GenerateMazeData() {
+		int[,] data = new int[mazeSize, mazeSize];
 
 		// initialize all walls to true
 		for (int y = 0; y < mazeSize; y++) {
 			for (int x = 0; x < mazeSize; x++) {
-				data[y, x] = true;
+				data[y, x] = 0;
 			}
 		}
 
@@ -107,11 +117,27 @@ public class LevelGenerator : MonoBehaviour {
 				mazeX = Mathf.Clamp(mazeX + xDirection, 1, mazeSize - 2);
 				mazeY = Mathf.Clamp(mazeY + yDirection, 1, mazeSize - 2);
 
-				if (data[mazeY, mazeX]) {
-					data[mazeY, mazeX] = false;
+				if (data[mazeY, mazeX] == 0) {
+					data[mazeY, mazeX] = 1;
 					tilesConsumed++;
 				}
 			}
+		}
+		tilesConsumed = 0;
+		while (tilesConsumed < holes) {
+			int positionToRemoveY = (int)(Random.Range(1, mazeSize - 1));
+			int positionToRemoveX = (int)(Random.Range(1, mazeSize - 1));
+			// remove some floor
+			for (int y = positionToRemoveY; y < mazeSize; y++) {
+				for (int x = positionToRemoveX; x < mazeSize; x++) {
+					if (data[y, x] == 1) {
+						data[y, x] = 2;
+						tilesConsumed++;
+						goto LoopEnd;
+					}
+				}
+			}
+			LoopEnd:;
 		}
 
 		return data;
