@@ -49,7 +49,7 @@ public class LevelGenerator : MonoBehaviour {
 					CreateChildPrefab(wallPrefab, wallsParent, x, 1, z);
 					CreateChildPrefab(wallPrefab, wallsParent, x, 2, z);
 					CreateChildPrefab(wallPrefab, wallsParent, x, 3, z);
-				} else if (!characterPlaced) {
+				} else if (!characterPlaced && mapData[z, x] == 1) {
 					
 					// place the character controller on the first empty wall we generate
 					characterController.transform.SetPositionAndRotation(

@@ -9,7 +9,7 @@ public class GrabPickups : MonoBehaviour {
 
 	private bool goingToExit = false;
 
-	void Awake() {
+	void Start() {
 		pickupSoundSource = DontDestroy.instance.GetComponents<AudioSource>()[1];
 	}
 

@@ -12,7 +12,6 @@ public class DieInTheHole : MonoBehaviour
     void Start()
     {
         screamSoundSource = DontDestroy.instance.GetComponents<AudioSource>()[2];
-
     }
 
     // Update is called once per frame
@@ -21,6 +20,7 @@ public class DieInTheHole : MonoBehaviour
         if (transform.position.y < 0) {
             if (!screamSoundSource.isPlaying) {
                 if (goToEndGame == true) {
+                    DontDestroy.level = 1;
                     SceneManager.LoadScene("GameOver");
                 } else {
                     screamSoundSource.Play();
